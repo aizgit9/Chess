@@ -60,7 +60,7 @@ public:
             return false;
         }
 
-        std::string filename = "assets/" + colorStr + "_" + typeStr + ".png";
+        std::string filename = "assets/" + colorStr + "-" + typeStr + ".png";
 
         std::unique_ptr<sf::Texture> texture = std::make_unique<sf::Texture>();
 
