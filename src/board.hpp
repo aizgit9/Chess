@@ -2,11 +2,26 @@
 #pragma once
 class Board {
 
-    
-public:
+private:
     int boardGrid[8][8] = { Piece::EMPTY };
 
+    int oldPosX;
+    int oldPosY;
+
+    int newPosX;
+    int newPosY;
+
+public:
+    
+
     Board(int playerColor) {
+
+        oldPosX = -1;
+        oldPosY = -1;
+
+        newPosX = -1;
+        newPosY = -1;
+
         int enemyColor = 16;
         if (playerColor == Piece::WHITE) {
             enemyColor = 16;
@@ -50,7 +65,37 @@ public:
     int getPiece(int x, int y) const {
         return boardGrid[y][x]; 
     }
+
+
     void setPiece(int x, int y, int piece) {
         boardGrid[y][x] = piece; 
     }
+
+    void setOldPos(int x, int y) {
+        oldPosX = x;
+        oldPosY = y;
+    }
+
+    void setNewPos(int x, int y) {
+        newPosX = x;
+        newPosY = y;
+    }
+
+    int getOldPosX() {
+        return oldPosX;
+    }
+
+    int getOldPosY() {
+        return oldPosY;
+    }
+
+    int getNewPosX() {
+        return newPosX;
+    }
+
+    int getNewPosY() {
+        return newPosY;
+    }
+
+
 };

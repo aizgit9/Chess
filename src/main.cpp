@@ -7,7 +7,7 @@
 #include <optional>
 #include "drag_drop_controller.hpp"
 
-void createBoardGraphic(sf::RenderWindow& window);
+void createBoardGraphic(sf::RenderWindow& window, Board& board);
 void preloadTextures(TextureManager& tm);
 void displayPiecesOnBoard(Board& board, TextureManager& tm, sf::RenderWindow& window);
 int getPlayerColor();
@@ -15,6 +15,8 @@ void handleInput(sf::RenderWindow& window, Board& board, DragDropController& ddc
 
 const sf::Color LIGHT_SQUARE_COLOR(220, 195, 141);
 const sf::Color DARK_SQUARE_COLOR(75, 124, 87);
+const sf::Color MOVED_FROM_SQUARE_COLOR(219, 160, 71);
+const sf::Color MOVED_TO_SQUARE_COLOR(237, 217, 127);
 const int SQUARE_SIZE = 128;
 
 int main()
@@ -31,12 +33,12 @@ int main()
 
     while (window.isOpen())
     {
-        handleInput(window, board, ddc);
-
         window.clear(sf::Color::White);
 
-        createBoardGraphic(window);
+        createBoardGraphic(window, board);
         displayPiecesOnBoard(board, tm, window);
+
+        handleInput(window, board, ddc);
 
         if (ddc.getDragging() == true && ddc.getDraggedPiece() != Piece::EMPTY) {
             
@@ -54,24 +56,32 @@ int main()
             window.draw(draggedPieceSprite);
         }
 
+
+
         window.display();
     }
 }
 
-void createBoardGraphic(sf::RenderWindow& window) {
+void createBoardGraphic(sf::RenderWindow& window, Board& board) {
 
     using namespace sf;
 
-    for (int y = 0; y < 8; y++) {
-        for (int x = 0; x < 8; x++) {
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
 
             Color squareColor(0,0,0);
-            Vector2f squarePosition(y * SQUARE_SIZE, x * SQUARE_SIZE);
+            Vector2f squarePosition(x * SQUARE_SIZE, y * SQUARE_SIZE);
 
-            if ((y + x) % 2 == 0) {
+            if ((x + y) % 2 == 0) {
                 squareColor = LIGHT_SQUARE_COLOR;
             } else {
                 squareColor = DARK_SQUARE_COLOR;
+            }
+
+            if (x == board.getOldPosX() && y == board.getOldPosY()) {
+                squareColor = MOVED_FROM_SQUARE_COLOR;
+            } else if (x == board.getNewPosX() && y == board.getNewPosY()) {
+                squareColor = MOVED_TO_SQUARE_COLOR;
             }
 
             RectangleShape square(Vector2f(SQUARE_SIZE, SQUARE_SIZE));

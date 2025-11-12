@@ -57,9 +57,10 @@ public:
 	void endDragDropOperation(int& newX, int& newY, Board& board) {
 		setDragging(false);
 
+		board.setOldPos(startX, startY);
+		board.setNewPos(newX, newY);
+
 		board.setPiece(newX, newY, draggedPiece);
-
-
 
 		draggedPiece = Piece::EMPTY;
 		startX = -1;
