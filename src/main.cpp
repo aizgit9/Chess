@@ -5,12 +5,13 @@
 #include <string>
 #include <iostream>
 #include <optional>
+#include "drag_drop_controller.hpp"
 
 void createBoardGraphic(sf::RenderWindow& window);
 void preloadTextures(TextureManager& tm);
 void displayPiecesOnBoard(Board& board, TextureManager& tm, sf::RenderWindow& window);
 int getPlayerColor();
-void handleInput(sf::RenderWindow& window);
+void handleInput(sf::RenderWindow& window, Board& board, DragDropController& ddc);
 
 const sf::Color LIGHT_SQUARE_COLOR(220, 195, 141);
 const sf::Color DARK_SQUARE_COLOR(75, 124, 87);
@@ -20,19 +21,39 @@ int main()
 {
     Board board(getPlayerColor());
     TextureManager tm;
+    DragDropController ddc;
     preloadTextures(tm);
 
     auto window = sf::RenderWindow(sf::VideoMode({1024u, 1024u}), "Chess");
     window.setFramerateLimit(144);
 
+
+
     while (window.isOpen())
     {
-        handleInput(window);
+        handleInput(window, board, ddc);
 
         window.clear(sf::Color::White);
 
         createBoardGraphic(window);
         displayPiecesOnBoard(board, tm, window);
+
+        if (ddc.getDragging() == true && ddc.getDraggedPiece() != Piece::EMPTY) {
+            
+            sf::Sprite draggedPieceSprite(tm.getTexture(ddc.getDraggedPiece()));
+            sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);
+
+            sf::Vector2f mousePosFloat(
+                static_cast<float>(mousePosInt.x + ddc.getDragOffsetX()),
+                static_cast<float>(mousePosInt.y + ddc.getDragOffsetY())
+            );
+
+
+
+            draggedPieceSprite.setPosition(mousePosFloat);
+            window.draw(draggedPieceSprite);
+        }
+
         window.display();
     }
 }
@@ -41,13 +62,13 @@ void createBoardGraphic(sf::RenderWindow& window) {
 
     using namespace sf;
 
-    for (int x = 0; x < 8; x++) {
-        for (int y = 0; y < 8; y++) {
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
 
             Color squareColor(0,0,0);
-            Vector2f squarePosition(x * SQUARE_SIZE, y * SQUARE_SIZE);
+            Vector2f squarePosition(y * SQUARE_SIZE, x * SQUARE_SIZE);
 
-            if ((x + y) % 2 == 0) {
+            if ((y + x) % 2 == 0) {
                 squareColor = LIGHT_SQUARE_COLOR;
             } else {
                 squareColor = DARK_SQUARE_COLOR;
@@ -74,8 +95,8 @@ void preloadTextures(TextureManager& tm) {
 void displayPiecesOnBoard(Board& board, TextureManager& tm, sf::RenderWindow& window) {
 
     using namespace sf;
-    for (int x = 0; x < 8; x++) {
-        for (int y = 0; y < 8; y++) {
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
             Vector2f piecePosition((x * SQUARE_SIZE), (y * SQUARE_SIZE));
 
             if (board.getPiece(x, y) != 0) {
@@ -126,7 +147,7 @@ int getPlayerColor() {
 
 }
 
-void handleInput(sf::RenderWindow& window) {
+void handleInput(sf::RenderWindow& window, Board& board, DragDropController& ddc) {
     while (const std::optional<sf::Event> event = window.pollEvent())
     {
         if (event->is<sf::Event::Closed>())
@@ -136,10 +157,30 @@ void handleInput(sf::RenderWindow& window) {
 
         if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
             if (mouseEvent->button == sf::Mouse::Button::Left) {
-                int columnIndex = mouseEvent->position.x / SQUARE_SIZE;
-                int rowIndex = mouseEvent->position.y / SQUARE_SIZE;
 
-                std::cout << columnIndex << " " << rowIndex << std::endl;
+                int clickX = mouseEvent->position.x;
+                int clickY = mouseEvent->position.y;
+
+                int boardX = clickX / SQUARE_SIZE;
+                int boardY = clickY / SQUARE_SIZE;
+
+                int spriteX = boardX * SQUARE_SIZE;
+                int spriteY = boardY * SQUARE_SIZE;
+
+                int dragOffsetX = spriteX - clickX;
+                int dragOffsetY = spriteY - clickY;
+
+                ddc.initiateDragDropOperation(boardX, boardY, dragOffsetX, dragOffsetY, board);
             }
         }
+
+        if (const auto* mouseRelease = event->getIf<sf::Event::MouseButtonReleased>()) {
+            if (mouseRelease->button == sf::Mouse::Button::Left) {
+                int boardX = mouseRelease->position.x / SQUARE_SIZE;
+                int boardY = mouseRelease->position.y / SQUARE_SIZE;
+
+                ddc.endDragDropOperation(boardX, boardY, board);
+            }
+        }
+    }
 }

@@ -4,7 +4,7 @@ class Board {
 
     
 public:
-    int boardGrid[8][8];
+    int boardGrid[8][8] = { Piece::EMPTY };
 
     Board(int playerColor) {
         int enemyColor = 16;
@@ -47,10 +47,10 @@ public:
         return boardGrid; 
     }
 
-    int getPiece(int row, int col) const {
-        return boardGrid[row][col]; 
+    int getPiece(int x, int y) const {
+        return boardGrid[y][x]; 
     }
-    void setPiece(int row, int col, int piece) {
-        boardGrid[row][col] = piece; 
+    void setPiece(int x, int y, int piece) {
+        boardGrid[y][x] = piece; 
     }
 };
