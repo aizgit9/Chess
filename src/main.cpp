@@ -10,6 +10,7 @@ void createBoardGraphic(sf::RenderWindow& window);
 void preloadTextures(TextureManager& tm);
 void displayPiecesOnBoard(Board& board, TextureManager& tm, sf::RenderWindow& window);
 int getPlayerColor();
+void handleInput(sf::RenderWindow& window);
 
 const sf::Color LIGHT_SQUARE_COLOR(220, 195, 141);
 const sf::Color DARK_SQUARE_COLOR(75, 124, 87);
@@ -21,21 +22,12 @@ int main()
     TextureManager tm;
     preloadTextures(tm);
 
-    
-
-
     auto window = sf::RenderWindow(sf::VideoMode({1024u, 1024u}), "Chess");
     window.setFramerateLimit(144);
 
     while (window.isOpen())
     {
-        while (const std::optional<sf::Event> event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
-            {
-                window.close();
-            }
-        }
+        handleInput(window);
 
         window.clear(sf::Color::White);
 
@@ -130,4 +122,24 @@ int getPlayerColor() {
         
     } while (true);
 
+
+
+}
+
+void handleInput(sf::RenderWindow& window) {
+    while (const std::optional<sf::Event> event = window.pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
+            window.close();
+        }
+
+        if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+            if (mouseEvent->button == sf::Mouse::Button::Left) {
+                int columnIndex = mouseEvent->position.x / SQUARE_SIZE;
+                int rowIndex = mouseEvent->position.y / SQUARE_SIZE;
+
+                std::cout << columnIndex << " " << rowIndex << std::endl;
+            }
+        }
 }
